@@ -12,18 +12,35 @@ export function Navbar() {
   const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
-    supabaseBrowser.auth.getUser().then((res: { data: { user: AuthUser | null } }) => setUser(res.data.user));
-    const {
-      data: { subscription },
-    } = supabaseBrowser.auth.onAuthStateChange((_event: string, session: { user: AuthUser } | null) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
+    try {
+      supabaseBrowser.auth
+        .getUser()
+        .then((res: { data: { user: AuthUser | null } }) => setUser(res.data.user))
+        .catch(() => setUser(null));
+
+      const {
+        data: { subscription },
+      } = supabaseBrowser.auth.onAuthStateChange(
+        (_event: string, session: { user: AuthUser } | null) => {
+          setUser(session?.user ?? null);
+        }
+      );
+
+      return () => subscription.unsubscribe();
+    } catch (e) {
+      // Si Supabase no está configurado (ej. variables faltantes en Vercel),
+      // evitamos romper toda la carga del sitio.
+      setUser(null);
+      return;
+    }
   }, []);
 
   async function handleSignOut() {
-    await supabaseBrowser.auth.signOut();
-    window.location.href = "/";
+    try {
+      await supabaseBrowser.auth.signOut();
+    } finally {
+      window.location.href = "/";
+    }
   }
 
   return (
