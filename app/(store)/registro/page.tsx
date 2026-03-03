@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
-export default function RegistroPage() {
+function RegistroForm() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
 
@@ -158,5 +158,17 @@ export default function RegistroPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function RegistroPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-zinc-50 px-4 py-12 dark:bg-zinc-950 flex items-center justify-center">
+        <p className="text-sm text-zinc-500">Cargando...</p>
+      </main>
+    }>
+      <RegistroForm />
+    </Suspense>
   );
 }
