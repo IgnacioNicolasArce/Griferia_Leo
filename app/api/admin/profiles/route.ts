@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET() {
   const [authRes, profilesRes] = await Promise.all([
-    supabaseAdmin.auth.admin.listUsers({ per_page: 500 }),
+    supabaseAdmin.auth.admin.listUsers({ perPage: 500 }),
     supabaseAdmin.from("profiles").select("id, full_name, email, role, created_at"),
   ]);
 
