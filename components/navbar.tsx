@@ -12,10 +12,10 @@ export function Navbar() {
   const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
-    supabaseBrowser.auth.getUser().then((res) => setUser(res.data.user));
+    supabaseBrowser.auth.getUser().then((res: { data: { user: AuthUser | null } }) => setUser(res.data.user));
     const {
       data: { subscription },
-    } = supabaseBrowser.auth.onAuthStateChange((_event, session) => {
+    } = supabaseBrowser.auth.onAuthStateChange((_event: string, session: { user: AuthUser } | null) => {
       setUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
