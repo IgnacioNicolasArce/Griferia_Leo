@@ -16,7 +16,7 @@ function getSupabaseBrowser() {
 /** Cliente para el navegador: guarda la sesión en cookies para que el middleware la reconozca */
 export const supabaseBrowser = new Proxy({} as ReturnType<typeof createBrowserClient>, {
   get(_, prop) {
-    return (getSupabaseBrowser() as Record<string, unknown>)[prop as string];
+    return (getSupabaseBrowser() as unknown as Record<string, unknown>)[prop as string];
   },
 });
 
