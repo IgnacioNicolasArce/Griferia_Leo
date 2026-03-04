@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -26,18 +27,38 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isProtected = path.startsWith("/checkout");
 
-  if (isProtected && !user) {
+  if (path.startsWith("/checkout") && !user) {
     const redirectUrl = path + request.nextUrl.search;
     return NextResponse.redirect(
       new URL(`/login?redirect=${encodeURIComponent(redirectUrl)}`, request.url)
     );
   }
 
+  if (path.startsWith("/admin")) {
+    if (!user) {
+      return NextResponse.redirect(
+        new URL(`/login?redirect=${encodeURIComponent(path)}`, request.url)
+      );
+    }
+    try {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile?.role !== "admin") {
+        return NextResponse.redirect(new URL("/?no-admin=1", request.url));
+      }
+    } catch {
+      return NextResponse.redirect(new URL("/?no-admin=1", request.url));
+    }
+  }
+
   return response;
 }
 
 export const config = {
-  matcher: ["/checkout", "/checkout/:path*"],
+  matcher: ["/checkout", "/checkout/:path*", "/admin", "/admin/:path*"],
 };
