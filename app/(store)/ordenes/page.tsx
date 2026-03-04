@@ -21,7 +21,7 @@ export default function MisOrdenesPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/admin/orders");
+        const res = await fetch("/api/orders");
         const data = await res.json();
         setOrders(Array.isArray(data) ? data : []);
       } catch {
