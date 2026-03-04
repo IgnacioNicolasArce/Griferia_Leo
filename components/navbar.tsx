@@ -10,6 +10,7 @@ import type { User as AuthUser } from "@supabase/supabase-js";
 export function Navbar() {
   const { cartCount } = useCart();
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     try {
@@ -28,12 +29,21 @@ export function Navbar() {
 
       return () => subscription.unsubscribe();
     } catch (e) {
-      // Si Supabase no está configurado (ej. variables faltantes en Vercel),
-      // evitamos romper toda la carga del sitio.
       setUser(null);
       return;
     }
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data: { role: string | null }) => setIsAdmin(data.role === "admin"))
+      .catch(() => setIsAdmin(false));
+  }, [user]);
 
   async function handleSignOut() {
     try {
@@ -73,13 +83,15 @@ export function Navbar() {
                   </span>
                 )}
               </Link>
-              <Link
-                href="/admin"
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-              >
-                <User className="h-5 w-5" />
-                <span className="hidden sm:inline">Admin</span>
-              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                >
+                  <User className="h-5 w-5" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={handleSignOut}
